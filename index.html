@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f7f2f5">
+<title>Recomposición 1.2 — Gym + Nutrición</title>
+<style>
+:root{--bg:#faf8f9;--card:#fff;--border:#e4dfe2;--muted:#6b6568;--soft:#f5f0f3;--text:#292529;--accent:#7b5268;--good:#47705a}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:1100px;margin:auto;padding:16px;background:var(--bg);color:var(--text)}
+h1{margin:0 0 4px}.sub{color:var(--muted);margin-bottom:12px}h2{margin-top:8px}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0}button{padding:10px 13px;border:1px solid var(--border);border-radius:11px;background:white;color:var(--text);cursor:pointer}button.active{font-weight:700;background:var(--soft);border-color:#cdbfc7}
+section{display:none;background:var(--card);padding:18px;border:1px solid var(--border);border-radius:16px;margin-bottom:16px}section.active{display:block}
+.card{border:1px solid var(--border);border-radius:13px;padding:14px;margin:10px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+input,select{width:100%;padding:10px;border:1px solid #d8d2d5;border-radius:9px;margin-top:4px;background:#fff;color:var(--text)}label{font-size:13px;color:#5d575a}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}td,th{border-bottom:1px solid #eee;padding:8px;text-align:left}.small{font-size:12px;color:var(--muted)}
+.kpi{font-size:25px;font-weight:750}.pill{display:inline-block;padding:5px 9px;border:1px solid var(--border);border-radius:999px;background:var(--soft);font-size:12px;margin:3px 3px 0 0}
+.progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin-top:7px}.progress>div{height:100%;width:0;background:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.meal{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.meal h3{margin:0 0 6px}.meal ul{margin:8px 0 0 18px;padding:0}
+.note{padding:12px;border-radius:11px;background:#f7f4f5;border:1px solid #e8e2e5}.good{color:var(--good);font-weight:650}
+.hero{background:linear-gradient(135deg,#f8f1f5,#fff);border-color:#ddd0d7}.bigday{font-size:18px;font-weight:750}.muted{color:var(--muted)}
+.listrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #eee}.listrow:last-child{border-bottom:0}
+canvas{width:100%;height:240px;border:1px solid var(--border);border-radius:12px;background:#fff}
+@media(max-width:700px){.two,.three{grid-template-columns:1fr}.meal{grid-template-columns:1fr}body{padding:10px}section{padding:14px}}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Recomposición">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
+</script>
+
+</head>
+<body>
+<h1>🍑 Recomposición 1.2</h1>
+<div class="sub">Tu centro de control: entrenamiento + nutrición + peso + medidas + progresión</div>
+
+<nav>
+<button onclick="show('hoy')" class="active">🏠 Hoy</button>
+<button onclick="show('gym')">🏋🏻‍♀️ Gym</button>
+<button onclick="show('nutricion')">🍽️ Nutrición</button>
+<button onclick="show('medidas')">📏 Medidas</button>
+<button onclick="show('resumen')">📈 Progreso</button>
+</nav>
+
+<section id="hoy" class="active">
+  <div class="card hero">
+    <div class="bigday" id="hoyTitulo"></div>
+    <div class="small" id="hoyFecha"></div>
+    <div id="hoyMensaje" style="margin-top:8px"></div>
+  </div>
+  <div class="three">
+    <div class="card"><span class="small">🎯 Calorías</span><div class="kpi">1,600–1,650</div><div class="progress"><div id="calBar"></div></div><div id="calText" class="small">Sin registrar hoy</div></div>
+    <div class="card"><span class="small">💪 Proteína</span><div class="kpi">105–120 g</div><div class="progress"><div id="protBar"></div></div><div id="protText" class="small">Sin registrar hoy</div></div>
+    <div class="card"><span class="small">🚶🏻‍♀️ Pasos</span><div class="kpi">5.5–6k</div><div class="progress"><div id="stepBar"></div></div><div id="stepText" class="small">Sin registrar hoy</div></div>
+  </div>
+  <div class="two">
+    <div class="card"><h3>🏋🏻‍♀️ Hoy toca</h3><div id="hoyRutina"></div><button onclick="show('gym')">Registrar entrenamiento →</button></div>
+    <div class="card"><h3>🍽️ Alimentación de hoy</h3><div id="hoyNut"></div><button onclick="show('nutricion')">Ver menú completo →</button></div>
+  </div>
+  <div class="card"><h3>⚡ Regla de progresión</h3><p>Trabaja normalmente a <b>RIR 1–3</b>. Si completas el tope del rango en todas las series con buena técnica y el RIR sigue dentro del objetivo, sube el peso ligeramente la próxima vez.</p></div>
+</section>
+
+<section id="gym">
+<h2>🏋🏻‍♀️ Registrar entrenamiento</h2>
+<div class="grid">
+<label>Fecha<input id="fecha" type="date"></label>
+<label>Día<select id="dia"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Sábado</option></select></label>
+</div>
+<div class="card">
+<label>Ejercicio<select id="ej"></select></label>
+<div class="grid">
+<label>Peso<input id="peso" type="number" step="0.5" placeholder="kg o lb"></label>
+<label>Reps<input id="reps" type="number"></label>
+<label>RIR<input id="rir" type="number" min="0" max="5" step="1"></label>
+</div><br><button onclick="guardarSerie()">Guardar serie</button>
+</div>
+<div class="card"><b>💡 Tip:</b> no necesitas llegar al fallo en cada serie. Queremos que las últimas repeticiones sean difíciles y que normalmente te queden unas 1–3 repeticiones "en reserva".</div>
+<table><thead><tr><th>Fecha</th><th>Día</th><th>Ejercicio</th><th>Peso</th><th>Reps</th><th>RIR</th></tr></thead><tbody id="log"></tbody></table>
+</section>
+
+<section id="nutricion">
+<h2>🍽️ Plan alimenticio</h2>
+<div class="grid">
+<label>Día<select id="nutDia"></select></label>
+<div class="card" style="margin:0"><span class="small">Objetivo</span><div class="kpi">~1,600–1,650 kcal</div><span class="small">105–120 g proteína</span></div>
+</div>
+<div id="nutResumen" class="card"></div>
+<div id="menuDia"></div>
+<div class="note"><b>Flexibilidad:</b> los números son aproximados. En alimentos empacados manda la etiqueta. No necesitas comer idéntico todos los días.</div>
+
+<h2 style="margin-top:24px">🧮 Registrar lo que realmente comiste</h2>
+<div class="grid">
+<label>Fecha<input id="nfecha" type="date"></label>
+<label>Calorías<input id="nkcal" type="number" placeholder="ej. 1640"></label>
+<label>Proteína (g)<input id="nprot" type="number" placeholder="ej. 112"></label>
+<label>Pasos<input id="nsteps" type="number" placeholder="ej. 5800"></label>
+</div><br><button onclick="guardarNutLog()">Guardar día</button>
+<table><thead><tr><th>Fecha</th><th>Kcal</th><th>Proteína</th><th>Pasos</th></tr></thead><tbody id="nutlog"></tbody></table>
+</section>
+
+<section id="medidas">
+<h2>📏 Medidas y progreso corporal</h2>
+div class="small">Registra cuando quieras; para peso, es más útil comparar promedios semanales que un solo día.</div>
+<div class="grid">
+<label>Fecha<input id="mfecha" type="date"></label><label>Peso kg<input id="mpeso" type="number" step="0.1"></label>
+<label>Cintura cm<input id="mcintura" type="number" step="0.1"></label><label>Cadera cm<input id="mcadera" type="number" step="0.1"></label>
+<label>Pasos<input id="pasos" type="number"></label><label>Calorías<input id="kcal" type="number"></label><label>Proteína g<input id="prot" type="number"></label>
+</div><br><button onclick="guardarMedida()">Guardar</button>
+<table><thead><tr><th>Fecha</th><th>Peso</th><th>Cintura</th><th>Cadera</th><th>Pasos</th><th>Kcal</th><th>Prot.</th></tr></thead><tbody id="medlog"></tbody></table>
+</section>
+
+<section id="resumen">
+<h2>📈 Progreso</h2>
+<div class="three">
+<div class="card"><span class="small">Último peso</span><div class="kpi" id="lastWeight">—</div></div>
+<div class="card"><span class="small">Cambio desde inicio</span><div class="kpi" id="weightChange">—</div></div>
+<div class="card"><span class="small">Última cintura</span><div class="kpi" id="lastWaist">—</div></div>
+</div>
+<div class="card"><h3>⚖️ Peso</h3><canvas id="weightChart" width="900" height="240"></canvas></div>
+<div class="card"><h3>📏 Cintura</h3><canvas id="waistChart" width="900" height="240"></canvas></div>
+<div class="card"><h3>💪 Fuerza — historial del ejercicio seleccionado</h3>
+<label>Ejercicio<select id="chartExercise"></select></label>
+<canvas id="strengthChart" width="900" height="240"></canvas>
+</div>
+<div class="card"><h3>🎯 Tus objetivos</h3>
+<div class="listrow"><span>Calorías</span><b>~1,600–1,650 kcal</b></div>
+<div class="listrow"><span>Proteína</span><b>105–120 g/día</b></div>
+<div class="listrow"><span>Pasos iniciales</span><b>5,500–6,000/día</b></div>
+<div class="listrow"><span>Entrenamiento</span><b>Fuerza + progresión</b></div>
+<div class="listrow"><span>Objetivo corporal</span><b>Menos grasa + músculo conservado/construido</b></div>
+</div>
+<button onclick="borrarTodo()" class="danger">Borrar todos los registros de este navegador</button>
+</section>
+
+<script>
+const rutina={
+"Lunes":[["Around the world","3×10–15"],["Lateral raise","3×10–15"],["Front raise","2×10–15"],["Overhead tricep extension","3×10–15"],["Serve the platter","2×10–15"],["Shoulder press","3×8–12"],["Hammer curl","3×10–15"],["Dumbbell row","3×8–12"]],
+"Martes":[["Hip thrust","4×8–12"],["Bulgarian split squat","3×8–10/lado"],["Romanian deadlift","3×8–12"],["Cable kickback (rodilla 90°)","2×12–15"],["Cable kickback (pierna atrás)","2×12–15"]],
+"Miércoles":[["Lat pulldown","3×8–12"],["Seated cable row","3×8–12"],["Low row","2×8–12"],["Chest press","3×8–12"],["Pec fly","2×10–15"],["Cable pullover","2×10–15"],["Face pull","3×12–15"]],
+"Jueves":[["Leg press","4×8–12"],["Quad extension","3×10–15"],["Adduction","2×12–15"],["Abduction","3×15–20"]],
+"Sábado":[["Glute bridge pierna extendida","3×10–15/lado"],["Glute bridge pierna doblada","3×10–15/lado"],["Glute bridge bilateral","3×12–15"],["Bird dog","3×8–12/lado"],["Cuadrupedia toque al hombro","3×8–12/lado"],["Russian twist","3×10–15"]]
+};
+const plan={
+"Lunes":{total:"~1,625 kcal",protein:"~118 g",meals:[
+["Desayuno","~320 kcal | ~23 g proteína",["2 huevos","100 g claras San Juan","1 Oroweat Thins","150 g papaya","100 g verduras"]],
+["Colación","~190 kcal | ~19 g proteína",["150 g Yoplait Skyr","150 g guayaba"]],
+["Comida","~490 kcal | ~38 g proteína",["100 g pollo","150 g arroz cocido","150 g calabacita/chayote/ejote","1 tortilla","5 g aceite"]],
+["Colación","~162 kcal | 18 g proteína",["1 Oikos Pro Chocolate"]],
+["Cena","~360 kcal | ~20 g proteína",["1 Tuny Habanero","2 tostadas Salmas","50 g aguacate","verduras","30 g queso Oaxaca"],"+ 2 tortillas durante el día"]]},
+"Martes":{total:"~1,600–1,650 kcal",protein:"~120–130 g",meals:[
+["Desayuno","~350 kcal | ~23 g proteína",["2 huevos","100 g claras","2 tortillas","100 g plátano","verduras"]],
+["Colación / pre-entreno","~180 kcal | ~16 g proteína",["150 g Skyr","100 g plátano"]],
+["Comida","~465 kcal | ~38 g proteína",["100 g pollo","200 g papa","verduras","1 tortilla","5 g aceite"]],
+["Post-entreno","~162 kcal | 18 g proteína",["1 Oikos Pro"]],
+["Cena","~370 kcal | ~36 g proteína",["120 g tilapia","2 tortillas","50 g aguacate","verduras","salsa"]],
+["Ajuste si hace falta","~70–140 kcal",["1 fruta y/o 1 tortilla, según hambre y total del día"]]]},
+"Miércoles":{total:"~1,620 kcal",protein:"~110–120 g",meals:[
+["Desayuno","~320 kcal | ~24 g proteína",["2 huevos","100 g claras","1 Oroweat Thins","150 g papaya","verduras"]],
+["Colación","~160 kcal | ~17 g proteína",["150 g Skyr","200 g melón"]],
+["Comida — 🍝 pasta","~550 kcal | ~38 g proteína",["100 g carne molida magra","150 g pasta cocida","150 g calabacita","100 g salsa de tomate","5 g aceite"]],
+["Colación","~162 kcal | 18 g proteína",["1 Oikos Pro"]],
+["Cena","~340 kcal | ~23 g proteína",["2 huevos","100 g claras","2 tortillas","50 g aguacate","verduras"]],
+["Ajuste","~60–90 kcal",["1 fruta si el total del día quedó corto"]]]},
+"Jueves":{total:"~1,600 kcal",protein:"~115–120 g",meals:[
+["Desayuno","~325 kcal | ~22 g proteína",["2 huevos","100 g claras","2 tortillas","150 g papaya","verduras"]],
+["Colación","~265 kcal | ~22 g proteína",["1 Oikos Pro","150 g guayaba"]],
+["Comida","~490 kcal | ~38 g proteína",["100 g pollo","150 g arroz cocido","verduras","1 tortilla","5 g aceite"]],
+["Colación","~160 kcal | ~17 g proteína",["150 g Skyr","200 g melón"]],
+["Cena","~360 kcal | ~35 g proteína",["120 g tilapia","2 tostadas","50 g aguacate","verduras"]]]},
+"Viernes":{total:"~1,600–1,620 kcal",protein:"~105–115 g",meals:[
+["Desayuno","~345 kcal",["2 huevos","100 g claras","1 Oroweat Thins","150 g mango","verduras"]],
+["Colación","~190 kcal",["150 g Skyr","150 g guayaba"]],
+["Comida","~500 kcal",["100 g carne molida magra","200 g papa","verduras","1 tortilla","5 g aceite"]],
+["Colación","~100 kcal",["1 gelatina light","15 g almendras"]],
+["Cena","~360 kcal",["1 Tuny Habanero","2 tostadas","50 g aguacate","30 g Oaxaca","verduras"]],
+["Ajuste","~100–115 kcal",["240 ml Alpura PRO o 1 fruta + 1 tortilla"]]]},
+"Sábado":{total:"~1,580–1,600 kcal",protein:"~115–125 g",meals:[
+["Desayuno","~325 kcal",["2 huevos","100 g claras","2 tortillas","150 g papaya","verduras"]],
+["Colación","~180 kcal",["150 g Skyr","100 g plátano"]],
+["Comida — 🍝 pasta con camarones","~550 kcal | ~47 g proteína",["150 g pasta cocida","120 g camarón","150 g calabacita","100 g salsa de tomate","5 g aceite","30 g queso Oaxaca"]],
+["Colación","~162 kcal | 18 g proteína",["1 Oikos Pro"]],
+["Cena","~290 kcal",["1 Tuny","2 tortillas","50 g aguacate","jícama/zanahoria/verduras"]],
+["Ajuste","~70–90 kcal",["1 fruta si hace falta para acercarte al objetivo"]]]},
+"Domingo":{total:"~1,640 kcal",protein:"~105–115 g",meals:[
+["Desayuno","~350 kcal",["2 huevos","100 g claras","30 g queso Oaxaca","verduras","1 Oroweat Thins","150–200 g melón"]],
+["Colación","~260 kcal",["1 Oikos Pro","150 g guayaba"]],
+["Comida","~490 kcal",["100 g pollo","150 g arroz","verduras","1 tortilla","5 g aceite"]],
+["Colación","~100 kcal",["1 gelatina light","15 g almendras"]],
+["Cena","~440 kcal",["120 g tilapia","200 g papa","verduras","50 g aguacate"]]]}
+};
+
+const $=id=>document.getElementById(id);
+function localDate(){let d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function dayName(){return ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()]}
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));[...document.querySelectorAll("nav button")].find(b=>b.getAttribute("onclick").includes(id)).classList.add("active");if(id==="resumen")renderCharts()}
+function fillExercises(){let d=$("dia").value;$("ej").innerHTML=(rutina[d]||[]).map(x=>`<option>${x[0]}</option>`).join("")}
+function getLog(){return JSON.parse(localStorage.getItem("gymLog")||"[]")}
+function guardarSerie(){let a=getLog();a.push({fecha:$("fecha").value,dia:$("dia").value,ej:$("ej").value,peso:Number($("peso").value),reps:Number($("reps").value),rir:Number($("rir").value)});localStorage.setItem("gymLog",JSON.stringify(a));renderLog();renderHome()}
+function renderLog(){let a=getLog();$("log").innerHTML=a.slice().reverse().map(x=>`<tr><td>${x.fecha}</td><td>${x.dia}</td><td>${x.ej}</td><td>${x.peso||""}</td><td>${x.reps||""}</td><td>${x.rir??""}</td></tr>`).join("")}
+function renderRutinaHome(){let d=dayName();let arr=rutina[d];if(!arr){$("hoyRutina").innerHTML="<span class='muted'>Descanso / caminata. 😌</span>";return}$("hoyRutina").innerHTML=arr.map(x=>`<div class="listrow"><span>${x[0]}</span><b>${x[1]}</b></div>`).join("")}
+function initNut(){let days=Object.keys(plan);$("nutDia").innerHTML=days.map(d=>`<option>${d}</option>`).join("");$("nutDia").value=dayName();renderNut();$("nutDia").onchange=renderNut}
+function renderNut(){let d=$("nutDia").value,p=plan[d];$("nutResumen").innerHTML=`<b>${d}</b><br><span class="kpi">${p.total}</span> <span class="small">| ${p.protein}</span><div class="pill">4–5 comidas</div><div class="pill">flexible</div>`;$("menuDia").innerHTML=p.meals.map(m=>`<div class="card meal"><div><h3>${m[0]}</h3><div class="small">${m[1]}</div><ul>${m[2].map(i=>`<li>${i}</li>`).join("")}</ul>${m[3]?`<div class="small" style="margin-top:8px"><b>Nota:</b> ${m[3]}</div>`:""}</div></div>`).join("");renderHome()}
+function getNutLog(){return JSON.parse(localStorage.getItem("nutLog")||"[]")}
+function guardarNutLog(){let a=getNutLog();let item={fecha:$("nfecha").value,kcal:Number($("nkcal").value),prot:Number($("nprot").value),steps:Number($("nsteps").value)};a=a.filter(x=>x.fecha!==item.fecha);a.push(item);localStorage.setItem("nutLog",JSON.stringify(a));renderNutLog();renderHome();$("nkcal").value="";$("nprot").value="";$("nsteps").value=""}
+function renderNutLog(){let a=getNutLog();$("nutlog").innerHTML=a.slice().sort((x,y)=>y.fecha.localeCompare(x.fecha)).map(x=>`<tr><td>${x.fecha}</td><td>${x.kcal||""}</td><td>${x.prot||""}</td><td>${x.steps||""}</td></tr>`).join("")}
+function guardarMedida(){let a=JSON.parse(localStorage.getItem("bodyLog")||"[]");let item={fecha:$("mfecha").value,peso:Number($("mpeso").value)||null,cintura:Number($("mcintura").value)||null,cadera:Number($("mcadera").value)||null,pasos:Number($("pasos").value)||null,kcal:Number($("kcal").value)||null,prot:Number($("prot").value)||null};a=a.filter(x=>x.fecha!==item.fecha);a.push(item);localStorage.setItem("bodyLog",JSON.stringify(a));renderMed();renderCharts();renderHome()}
+function renderMed(){let a=JSON.parse(localStorage.getItem("bodyLog")||"[]");$("medlog").innerHTML=a.slice().sort((x,y)=>y.fecha.localeCompare(x.fecha)).map(x=>`<tr><td>${x.fecha}</td><td>${x.peso??""}</td><td>${x.cintura??""}</td><td>${x.cadera??""}</td><td>${x.pasos??""}</td><td>${x.kcal??""}</td><td>${x.prot??""}</td></tr>`).join("")}
+function getTodayNut(){return getNutLog().find(x=>x.fecha===localDate())}
+function renderHome(){let d=dayName(),date=localDate();$("hoyTitulo").textContent=d==="Viernes"?"😌 Viernes — descanso total":d==="Domingo"?"🚶🏻‍♀️ Domingo — caminata":`🔥 ${d} — entrenamiento`;$("hoyFecha").textContent=date;$("hoyMensaje").innerHTML=d==="Viernes"?"Hoy recuperamos. No necesitas compensar comiendo poquísimo.":d==="Domingo"?"Caminata de 40 min y listo. Recuperación también cuenta.":`Hoy toca <b>${rutina[d]?rutina[d].map(x=>x[0]).slice(0,2).join(" + ")+"…":"descanso"}</b>.`;
+let arr=rutina[d];$("hoyRutina").innerHTML=arr?arr.map(x=>`<div class="listrow"><span>${x[0]}</span><b>${x[1]}</b></div>`).join(""):"<span class='muted'>Descanso / caminata. 😌</span>";
+let p=plan[d]||plan["Domingo"];$("hoyNut").innerHTML=`<div><b>${p.total}</b> · ${p.protein}</div><div class="small" style="margin-top:6px">${p.meals.slice(0,3).map(m=>m[0]).join(" · ")}…</div>`;
+let n=getTodayNut();if(n){let cb=Math.min(100,n.kcal/1650*100),pb=Math.min(100,n.prot/110*100),sb=Math.min(100,n.steps/6000*100);$("calBar").style.width=cb+"%";$("protBar").style.width=pb+"%";$("stepBar").style.width=sb+"%";$("calText").textContent=n.kcal+" kcal";$("protText").textContent=n.prot+" g";$("stepText").textContent=n.steps+" pasos"}else{$("calBar").style.width=$("protBar").style.width=$("stepBar").style.width="0%";$("calText").textContent=$("protText").textContent=$("stepText").textContent="Sin registrar hoy"}}
+function setupChartExercises(){let ex=[...new Set(getLog().map(x=>x.ej))];$("chartExercise").innerHTML=ex.map(x=>`<option>${x}</option>`).join("");$("chartExercise").onchange=renderCharts}
+function drawLine(canvas,pts,label,unit){let ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.font="13px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";if(!pts.length){ctx.fillText("Aún no hay suficientes datos.",20,35);return}let vals=pts.map(p=>p.v),min=Math.min(...vals),max=Math.max(...vals);if(min===max){min-=1;max+=1}let pad={l:45,r:20,t:25,b:38},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;ctx.strokeStyle="#e5e0e3";ctx.lineWidth=1;for(let i=0;i<5;i++){let y=pad.t+ph*i/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillStyle="#6b6568";ctx.fillText((max-(max-min)*i/4).toFixed(1)+unit,4,y+4)}ctx.strokeStyle="#7b5268";ctx.lineWidth=3;ctx.beginPath();pts.forEach((p,i)=>{let x=pad.l+(pts.length===1?pw/2:pw*i/(pts.length-1)),y=pad.t+(max-p.v)/(max-min)*ph;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();ctx.fillStyle="#7b5268";pts.forEach((p,i)=>{let x=pad.l+(pts.length===1?pw/2:pw*i/(pts.length-1)),y=pad.t+(max-p.v)/(max-min)*ph;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();});ctx.fillStyle="#292529";ctx.fillText(label,20,18);pts.forEach((p,i)=>{if(i===0||i===pts.length-1){let x=pad.l+(pts.length===1?pw/2:pw*i/(pts.length-1));ctx.fillText(p.d,x-30,h-12)}})}
+function renderCharts(){let b=JSON.parse(localStorage.getItem("bodyLog")||"[]").filter(x=>x.peso||x.cintura).sort((a,b)=>a.fecha.localeCompare(b.fecha));let wp=b.filter(x=>x.peso).map(x=>({d:x.fecha,v:x.peso}));let wa=b.filter(x=>x.cintura).map(x=>({d:x.fecha,v:x.cintura}));drawLine($("weightChart"),wp,"Peso"," kg");drawLine($("waistChart"),wa,"Cintura"," cm");let ex=$("chartExercise").value;let g=getLog().filter(x=>x.ej===ex&&x.peso&&x.reps).sort((a,b)=>a.fecha.localeCompare(b.fecha));let byDate={};g.forEach(x=>{byDate[x.fecha]=Math.max(byDate[x.fecha]||0,x.peso)});drawLine($("strengthChart"),Object.entries(byDate).map(([d,v])=>({d,v})),"Peso usado","");if(wp.length){$("lastWeight").textContent=wp.at(-1).v+" kg";let base=wp[0].v;$("weightChange").textContent=(wp.at(-1).v-base).toFixed(1)+" kg"}else{$("lastWeight").textContent="—";$("weightChange").textContent="—"}$("lastWaist").textContent=wa.length?wa.at(-1).v+" cm":"—"}
+function borrarTodo(){if(confirm("¿Borrar TODOS los registros guardados en este navegador?")){["gymLog","bodyLog","nutLog"].forEach(k=>localStorage.removeItem(k));renderLog();renderMed();renderNutLog();setupChartExercises();renderCharts();renderHome()}}
+$("fecha").value=$("mfecha").value=$("nfecha").value=localDate();$("dia").value=dayName();$("dia").onchange=fillExercises;fillExercises();initNut();renderLog();renderMed();renderNutLog();setupChartExercises();renderCharts();renderHome();
+</script>
+</body>
+</html>
