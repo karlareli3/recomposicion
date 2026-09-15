@@ -36,9 +36,26 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 </script>
 
+
+<style>
+.official-routine{margin:18px 0;padding:18px;border-radius:18px;background:#fff;border:1px solid #eadfe5}
+.official-routine h3{margin:0 0 10px}.official-routine .day{margin:12px 0}.official-routine b{font-weight:700}
+.official-routine small{display:block;opacity:.75;margin-top:8px}
+</style>
+<script>
+window.RECOMPOSICION_RUTINA_OFICIAL = {
+  lunes: [["Shoulder press","3","8–12"],["Lateral raise","3","12–15"],["Single-arm overhead tricep extension","3","10–15 por brazo"],["Tricep pushdown","3","10–15"],["Single-arm triceps kickback en banca","2","12–15 por brazo"],["Hammer curl","3","10–15"],["Around the world","2","12–15","opcional"]],
+  martes: [["Hip thrust","4","8–12"],["Bulgarian split squat","3","8–10 por lado"],["Romanian deadlift","3","8–12"],["Cable kickback — rodilla 90°","3","12–15"],["Cable kickback — pierna atrás","3","12–15"]],
+  miercoles: [["Lat pulldown","3","8–12"],["Seated cable row","3","8–12"],["Chest press","3","8–12"],["Pec fly","2","10–15"],["Cable pullover","2","10–15"],["Face pull","2","12–15"]],
+  jueves: [["Leg press","3","8–12"],["Extensión de cuádriceps","3","10–15"],["Abductores","3","12–15"],["Aductores","2","12–15"]],
+  sabado: [["Glute bridge pierna extendida","3","10–15 por lado"],["Glute bridge pierna doblada","3","10–15 por lado"],["Glute bridge bilateral","3","12–15"],["Bird dog","3","8–12 por lado"],["Cuadrupedia toque al hombro","3","8–12 por lado"],["Russian twist","3","10–15"]],
+  domingo: [["Caminata","1","40 min"]]
+};
+</script>
+
 </head>
 <body>
-<h1>🍑 Recomposición 1.2</h1>
+<h1>🍑 Recomposición 2.2</h1>
 <div class="sub">Tu centro de control: entrenamiento + nutrición + peso + medidas + progresión</div>
 
 <nav>
@@ -141,10 +158,10 @@ div class="small">Registra cuando quieras; para peso, es más útil comparar pro
 
 <script>
 const rutina={
-"Lunes":[["Around the world","3×10–15"],["Lateral raise","3×10–15"],["Front raise","2×10–15"],["Overhead tricep extension","3×10–15"],["Serve the platter","2×10–15"],["Shoulder press","3×8–12"],["Hammer curl","3×10–15"],["Dumbbell row","3×8–12"]],
-"Martes":[["Hip thrust","4×8–12"],["Bulgarian split squat","3×8–10/lado"],["Romanian deadlift","3×8–12"],["Cable kickback (rodilla 90°)","2×12–15"],["Cable kickback (pierna atrás)","2×12–15"]],
-"Miércoles":[["Lat pulldown","3×8–12"],["Seated cable row","3×8–12"],["Low row","2×8–12"],["Chest press","3×8–12"],["Pec fly","2×10–15"],["Cable pullover","2×10–15"],["Face pull","3×12–15"]],
-"Jueves":[["Leg press","4×8–12"],["Quad extension","3×10–15"],["Adduction","2×12–15"],["Abduction","3×15–20"]],
+"Lunes":[["Shoulder press","3×8–12"],["Lateral raise","3×12–15"],["Single-arm overhead tricep extension","3×10–15/brazo"],["Tricep pushdown","3×10–15"],["Single-arm triceps kickback en banca","2×12–15/brazo"],["Hammer curl","3×10–15"],["Around the world (opcional)","2×12–15"]],
+"Martes":[["Hip thrust","4×8–12"],["Bulgarian split squat","3×8–10/lado"],["Romanian deadlift","3×8–12"],["Cable kickback (rodilla 90°)","3×12–15"],["Cable kickback (pierna atrás)","3×12–15"]],
+"Miércoles":[["Lat pulldown","3×8–12"],["Seated cable row","3×8–12"],["Chest press","3×8–12"],["Pec fly","2×10–15"],["Cable pullover","2×10–15"],["Face pull","2×12–15"]],
+"Jueves":[["Leg press","3×8–12"],["Quad extension","3×10–15"],["Abduction","3×12–15"],["Adduction","2×12–15"]],
 "Sábado":[["Glute bridge pierna extendida","3×10–15/lado"],["Glute bridge pierna doblada","3×10–15/lado"],["Glute bridge bilateral","3×12–15"],["Bird dog","3×8–12/lado"],["Cuadrupedia toque al hombro","3×8–12/lado"],["Russian twist","3×10–15"]]
 };
 const plan={
